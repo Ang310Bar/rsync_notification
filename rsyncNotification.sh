@@ -2,6 +2,7 @@
 
 # Funzione per configurare sendmail con un server SMTP esterno e un indirizzo email come mittente
 configura_sendmail() {
+    cp /etc/mail/sendmail.mc /etc/mail/sendmail.mc.old
     touch /etc/mail/client-info
     echo "AuthInfo: \"U:root\" \"I:MA_rsync_notify@outlook.com\" \"P:R0cky2022!\"" >> /etc/mail/client-info        #account di invio
     makemap hash /etc/mail/client-info < /etc/mail/client-info
@@ -58,12 +59,13 @@ inserisci_dati () {
     echo "Inserisci il comando rsync:"
     read comando
 }
-# Inserisce i dati
-inserisci_dati
+
 # Esegui il controllo dei pacchetti necessari e la configurazione
 installa_sendmail
 configura_sendmail
 
+# Inserisce i dati
+inserisci_dati
 
 echo "Sto per iniziare l'rsync..."
 echo "3"
@@ -88,11 +90,16 @@ else
     echo "Rsync della cartella interrotto con errore."
     errore=$(cat errore.log)
     oggetto_email="RSYNC INTERROTTO - ERRORE"
-    corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , si è interrotto non portanto a termine il trasferimento. Questo è il log dell'errore: \n$errore"
+    corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , si è interrotto non portando a termine il trasferimento. Questo è il log dell'errore: \n$errore"
     # Invia un'email di notifica di errore
     echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
 fi
 #aspetta che l'email sia inviata prima di fare il reset delle impostazioni
+while ! tail -n 1 /var/log/maillog | grep -q "stat=Sent (OK"; do
+    echo "Sto inviando l'email..."
+    sleep 5  # Attendi 5 secondi prima di controllare di nuovo
+done
+echo "Email inviata"
+sleep 1
 echo "Chiusura e ripristino delle impostazioni"
-sleep 5
 reset_config
