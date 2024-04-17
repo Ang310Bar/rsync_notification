@@ -65,6 +65,8 @@ installa_sendmail
 configura_sendmail
 
 # Inserisce i dati
+echo "****************************************************************"
+echo "Ok, ho configurato tutto, ora dovrai inserire i dati necessari."
 inserisci_dati
 
 echo "Sto per iniziare l'rsync..."
@@ -85,21 +87,26 @@ if [ $stato_uscita -eq 0 ]; then
     oggetto_email="RSYNC TERMINATO CON SUCCESSO"
     corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , è stato completato con successo!"
     # Invia un'email di notifica di successo
-    echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
 else
     echo "Rsync della cartella interrotto con errore."
     errore=$(cat errore.log)
     oggetto_email="RSYNC INTERROTTO - ERRORE"
     corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , si è interrotto non portando a termine il trasferimento. Questo è il log dell'errore: \n$errore"
     # Invia un'email di notifica di errore
-    echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
 fi
+
+echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
 #aspetta che l'email sia inviata prima di fare il reset delle impostazioni
+sleep 5
 while ! tail -n 1 /var/log/maillog | grep -q "stat=Sent (OK"; do
+    if ! mailq | grep -q -v "^[A-Za-z0-9]"; then
+        echo "Invio non riuscito...Riprovo!"
+        echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
+        echo "**************************"
+    fi
     echo "Sto inviando l'email..."
-    sleep 5  # Attendi 5 secondi prima di controllare di nuovo
+    sleep 15  # Attendi 15 secondi prima di controllare di nuovo
 done
 echo "Email inviata"
-sleep 1
 echo "Chiusura e ripristino delle impostazioni"
 reset_config
