@@ -4,7 +4,7 @@ Entrambi gli script notificano con una mail (che inserite dopo averlo avviato) d
 
 IMPORTANTE PER SCRIPT WINDOWS
 
-Prima di lanciare lo script assicurarsi che il Path di installazione di Cygwin sia C:\cygwin64, nel caso fosse diverso va inserito il path corretto nella riga 28 dello script
+Prima di lanciare lo script assicurarsi che il Path di installazione di Cygwin sia C:\cygwin64, nel caso fosse diverso, va inserito il path corretto nella riga 28 dello script
 
 ![Immagine 2024-04-17 113331](https://github.com/Ang310Bar/rsync_notification/assets/167202987/c0fafc03-0b24-476c-b4ae-cef3f6ccfecb)
 
