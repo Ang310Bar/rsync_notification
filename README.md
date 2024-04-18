@@ -8,7 +8,7 @@ Prima di lanciare lo script assicurarsi che il Path di installazione di Cygwin s
 
 ![Immagine 2024-04-17 113331](https://github.com/Ang310Bar/rsync_notification/assets/167202987/c0fafc03-0b24-476c-b4ae-cef3f6ccfecb)
 
-(inseriscilo senza \ finale).
+(inseriscilo senza \ finale). Quando viene chiesto di digitare il comando evitare l'uso di doppi apici ("") ed utilizzare i singoli apici ('').
 Consiglio di verificate la presenza del cmdlet Send-MailMessage digitando dalla PowerShell:
 
 Get-Command Send-MailMessage -ErrorAction SilentlyContinue
