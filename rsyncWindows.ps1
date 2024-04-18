@@ -23,8 +23,12 @@ function InviaEmail {
     )
 
     try {
-        $email_copia_stringa = $email_copia -join ","
-        Send-MailMessage -From $EmailFrom -To $email_destinatario -Cc $email_copia_stringa -Subject $oggetto_email -Body $corpo_email -SmtpServer "smtp.office365.com" -Port 587 -UseSsl -Credential $Credential -ErrorAction Stop
+        if (-not [string]::IsNullOrEmpty($email_copia)) {
+            $email_copia_stringa = $email_copia -join ","
+            Send-MailMessage -From $EmailFrom -To $email_destinatario -Cc $email_copia_stringa -Subject $oggetto_email -Body $corpo_email -SmtpServer "smtp.office365.com" -Port 587 -UseSsl -Credential $Credential -ErrorAction Stop
+        } else {
+            Send-MailMessage -From $EmailFrom -To $email_destinatario -Subject $oggetto_email -Body $corpo_email -SmtpServer "smtp.office365.com" -Port 587 -UseSsl -Credential $Credential -ErrorAction Stop
+        }
         Write-Host "Email inviata con successo."
     } catch {
         Write-Host "Si e' verificato un errore durante l'invio dell'email: $($_.Exception.Message)"
@@ -52,10 +56,10 @@ $Credential = New-Object System.Management.Automation.PSCredential($EmailFrom, $
 
 $comando_completo = "$comando > >(tee $file_output) 2> >(tee $file_errore >&2)"
 
-# Avvia il processo e attende che sia terminato
+# Avvia il processo e attendi che sia terminato
 Start-Process -FilePath $cygwinExe -ArgumentList "-l", "-i", "-c", "`"$comando_completo`"" -Wait -NoNewWindow
 
-# Legge l'esito dal file
+# Leggi l'esito dal file
 $stato_uscita = Get-Content -Path "$cygwinPath$file_errore"
 # Controlla lo stato di uscita del comando
 if ($null -eq $stato_uscita) {
@@ -72,3 +76,4 @@ if ($null -eq $stato_uscita) {
     # Invia un'email di notifica di errore
     InviaEmail -email_destinatario $email_destinatario -comune $comune -oggetto_email $oggetto_email -corpo_email $corpo_email
 }
+
