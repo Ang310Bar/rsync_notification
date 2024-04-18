@@ -51,9 +51,20 @@ installa_sendmail() {
         fi
     fi
 }
+#funzione per inserire i dati
 inserisci_dati () {
     echo "Inserisci l'indirizzo email al quale notificare:"
     read email_destinatario  #inserisci qui la tua email
+    echo "Vuoi mettere qualcuno in copia? (s/n)"
+    read risposta_copia
+    email_copia=()
+    while [ "$risposta_copia" == "s" ]; do
+        echo "Scrivi l'indirizzo email in copia:"
+        read email
+        email_copia+=("$email")
+        echo "Vuoi inserire un altro indirizzo email in copia? (s/n)"
+        read risposta_copia
+    done
     echo "Inserisci il comune di riferimento:"
     read comune
     echo "Inserisci il comando rsync:"
@@ -78,30 +89,30 @@ echo "1"
 sleep 1
 
 # Esegui il comando e controlla il suo stato di uscita
-eval "$comando" 2>> errore.log
+eval "$comando" 2>&1 | tee output.log | tee errore.log
 stato_uscita=$?
 
 # Controlla lo stato di uscita del comando
 if [ $stato_uscita -eq 0 ]; then
     echo "Rsync della cartella completata con successo."
     oggetto_email="RSYNC TERMINATO CON SUCCESSO"
-    corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , è stato completato con successo!"
+    corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , è stato completato con successo! Troverai il log completo (output.log) nella cartella dove hai eseguito il comando."
     # Invia un'email di notifica di successo
 else
     echo "Rsync della cartella interrotto con errore."
     errore=$(cat errore.log)
     oggetto_email="RSYNC INTERROTTO - ERRORE"
-    corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , si è interrotto non portando a termine il trasferimento. Questo è il log dell'errore: \n$errore"
+    corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , si è interrotto non portando a termine il trasferimento. Troverai il log completo (output.log) nella cartella dove hai eseguito il comando. Questo invece è il log dell'errore: \n$errore"
     # Invia un'email di notifica di errore
 fi
 
-echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
+echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nCc: $(IFS=','; echo "${email_copia[*]}")\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
 #aspetta che l'email sia inviata prima di fare il reset delle impostazioni
 sleep 5
 while ! tail -n 1 /var/log/maillog | grep -q "stat=Sent (OK"; do
     if ! mailq | grep -q -v "^[A-Za-z0-9]"; then
         echo "Invio non riuscito...Riprovo!"
-        echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
+        echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nCc: $(IFS=','; echo "${email_copia[*]}")\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
         echo "**************************"
     fi
     echo "Sto inviando l'email..."
