@@ -4,6 +4,7 @@
 ## Funzione per configurare sendmail con un server SMTP esterno e un indirizzo email come mittente ##
 #####################################################################################################
 configura_sendmail() {
+    echo "COnfiguro sendmail..." | tee -a script.log
     cp /etc/mail/sendmail.mc /etc/mail/sendmail.mc.old
     touch /etc/mail/client-info
     echo "AuthInfo: \"U:root\" \"I:MA_rsync_notify@outlook.com\" \"P:R0cky2022!\"" >> /etc/mail/client-info        #account di invio
@@ -38,7 +39,7 @@ reset_config() {
 ####################################################################################
 installa_sendmail() {
     if ! command -v sendmail &> /dev/null; then
-        echo "sendmail non è installato. Installazione in corso..."
+        echo "sendmail non è installato. Installazione in corso..." | tee -a script.log
         if [[ -n $(command -v apt-get) ]]; then
             sudo apt-get update
             sudo apt-get install -y sendmail
@@ -47,7 +48,7 @@ installa_sendmail() {
             sudo yum install -y sendmail
             sudo yum install -y sendmail-cf
         else
-            echo "Non è stato possibile trovare un gestore di pacchetti supportato. Assicurati di aver installato sendmail manualmente."
+            echo "Non è stato possibile trovare un gestore di pacchetti supportato. Assicurati di aver installato sendmail manualmente." | tee -a script.log
             exit 1
         fi
     fi
@@ -93,6 +94,13 @@ inserisci_dati () {
         read risposta_comando
     done
 }
+
+
+if [ -f "script.log" ]; then
+    rm script.log
+fi
+touch script.log
+
 ########################################################################
 ## Esegue il controllo dei pacchetti necessari e fa la configurazione ##
 ########################################################################
@@ -118,11 +126,9 @@ sleep 1
 ##   rimuovo i vecchi log se ci sono ##
 #######################################
 if [ -f "./output.log" ]; then
-    # Il file esiste nella directory corrente, quindi cancellalo
     rm "./output.log"
 fi
 if [ -f "./errore.log" ]; then
-    # Il file esiste nella directory corrente, quindi cancellalo
     rm "./errore.log"
 fi
 
