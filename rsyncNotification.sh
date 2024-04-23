@@ -141,7 +141,7 @@ ip=$(echo "$comando" | sed 's/.*@\([^:]*\):.*/\1/')  #ottiene l'ip del pod dalla
 echo "Ip del pod: $ip" | tee -a script.log
 while [ $tentativi -le 5 ]; do
     # Esegue il comando e controlla il suo stato di uscita
-    eval "$comando" 2>&1 | tee -a output.log | tee -a errore.log
+    eval "$comando" 2>&1 | tee output.log | tee errore.log
     stato_uscita=$?
 
 
