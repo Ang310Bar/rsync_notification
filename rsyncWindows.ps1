@@ -118,7 +118,7 @@ do {
         Write-Host "Rsync della cartella completato con successo."
         "Rsync della cartella completato con successo." | Out-File -FilePath "$script_output" -Append
         $oggetto_email = "RSYNC TERMINATO CON SUCCESSO"
-        $corpo_email = "Ti comunico che l'rsync del repository, avviato per il comune di $comune, e' stato completato con successo! Se desideri visualizzare il log, lo trovi nel percorso 'cygwinPath\tmp\log.txt'."
+        $corpo_email = "Ti comunico che l'rsync del repository, avviato per il comune di $comune, e' stato completato con successo! Se desideri visualizzare il log, lo trovi al percorso '$cygwinPath\tmp\log.txt'."
         # Invia un'email di notifica di successo
         InviaEmail -email_destinatario $email_destinatario -comune $comune -oggetto_email $oggetto_email -corpo_email $corpo_email
         break
@@ -126,7 +126,7 @@ do {
         Write-Host "Rsync della cartella interrotto con errore."
         "Rsync della cartella interrotto con errore." | Out-File -FilePath "$script_output" -Append
         $oggetto_email = "RSYNC INTERROTTO - ERRORE"
-        $corpo_email = "Ti comunico che l'rsync del repository, avviato per il comune di $comune, si e' interrotto non portando a termine il trasferimento. Se desideri visualizzare i log, li trovi nel percorso 'cygwinPath\tmp\', questo e' lo stato di uscita del comando: `n$stato_uscita"
+        $corpo_email = "Ti comunico che l'rsync del repository, avviato per il comune di $comune, si e' interrotto non portando a termine il trasferimento. Se desideri visualizzare i log, li trovi nel percorso '$cygwinPath\tmp\', questo e' lo stato di uscita del comando: `n$stato_uscita"
         $retryCount++
         if ($retryCount -ge 5) {
             Write-Host "Numero massimo di tentativi raggiunto. Interrompo il processo."
