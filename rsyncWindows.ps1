@@ -120,7 +120,7 @@ do {
         $oggetto_email = "RSYNC TERMINATO CON SUCCESSO"
         $corpo_email = "Ti comunico che l'rsync del repository, avviato per il comune di $comune, e' stato completato con successo! Se desideri visualizzare il log, lo trovi al percorso '$cygwinPath\tmp\log.txt'."
         # Invia un'email di notifica di successo
-        #InviaEmail -email_destinatario $email_destinatario -comune $comune -oggetto_email $oggetto_email -corpo_email $corpo_email
+        InviaEmail -email_destinatario $email_destinatario -comune $comune -oggetto_email $oggetto_email -corpo_email $corpo_email
         break
     } else {
         Write-Host "Rsync della cartella interrotto con errore. Stato uscita: $stato_uscita . Tentativo n $retryCount" -ForegroundColor Red
@@ -129,7 +129,7 @@ do {
         if ($retryCount -ge 5) {
             Write-Host "Numero massimo di tentativi raggiunto. Interrompo il processo." -ForegroundColor Red
             "Numero massimo di tentativi raggiunto. Interrompo il processo." | Out-File -FilePath "$script_output" -Append
-            #InviaEmail -email_destinatario $email_destinatario -comune $comune -oggetto_email $oggetto_email -corpo_email $corpo_email
+            InviaEmail -email_destinatario $email_destinatario -comune $comune -oggetto_email $oggetto_email -corpo_email $corpo_email
             break
         } else {
             $ip = "8.8.8.8"
@@ -154,7 +154,7 @@ do {
                     "Tentativi di riconnessione esauriti. Fermo lo script." | Out-File -FilePath "$script_output" -Append
                     $oggetto_email = "RSYNC INTERROTTO PER DISCONNESSIONE"
                     $corpo_email = "Ti comunico che l'rsync del repository, avviato per il comune di $comune , si è interrotto a causa di una disconnessione. Ho fatto 30 tentativi di riconnessione ma senza successo. Troverai il riepilogo completo ($outputFile) e l'output dello script ($logFile) nella cartella dove hai eseguito il comando. Questo invece è il riepilogo degli errori: `n$errore"
-                    #InviaEmail -email_destinatario $email_destinatario -comune $comune -oggetto_email $oggetto_email -corpo_email $corpo_email
+                    InviaEmail -email_destinatario $email_destinatario -comune $comune -oggetto_email $oggetto_email -corpo_email $corpo_email
                     break
                 }
             }
