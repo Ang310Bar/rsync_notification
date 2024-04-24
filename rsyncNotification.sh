@@ -4,7 +4,7 @@
 ## Funzione per configurare sendmail con un server SMTP esterno e un indirizzo email come mittente ##
 #####################################################################################################
 configura_sendmail() {
-    echo "COnfiguro sendmail..." | tee -a script.log
+    echo "Configuro sendmail..." | tee -a script.log
     cp /etc/mail/sendmail.mc /etc/mail/sendmail.mc.old
     touch /etc/mail/client-info
     echo "AuthInfo: \"U:root\" \"I:MA_rsync_notify@outlook.com\" \"P:R0cky2022!\"" >> /etc/mail/client-info        #account di invio
@@ -137,8 +137,6 @@ fi
 #################################################################################################################
 tentativi=1 #tentativo 1 (che poi incremento fino a 5)
 echo "rsync avviato..." | tee -a script.log
-ip=$(echo "$comando" | sed 's/.*@\([^:]*\):.*/\1/')  #ottiene l'ip del pod dalla stringa
-echo "Ip del pod: $ip" | tee -a script.log
 while [ $tentativi -le 5 ]; do
     # Esegue il comando e controlla il suo stato di uscita
     eval "$comando" 2>&1 | tee output.log | tee errore.log
@@ -149,7 +147,7 @@ while [ $tentativi -le 5 ]; do
     ## Controlla lo stato di uscita del comando ##
     ##############################################
     if [ $stato_uscita -eq 0 ]; then
-        echo "Rsync della cartella completato con successo." | tee -a script.log
+        echo -e "Rsync della cartella completato con successo." | tee -a script.log
         if [ "$tentativi" -ne 1 ]; then
             oggetto_email="RSYNC RIUSCITO - ATTENZIONE"
             corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , è stato completato con successo! TUTTAVIA, ho riscontrato dei problemi, controlla i log! Troverai il riepilogo completo del comando (output.log) e l'output dello script (script.log) nella cartella dove hai eseguito il comando."
@@ -162,19 +160,19 @@ while [ $tentativi -le 5 ]; do
         echo "Rsync fallito. (Tentativo n $tentativi)" | tee -a script.log
         errore=$(cat errore.log)
         echo "ERRORE RISCONTRATO: $stato_uscita" | tee -a script.log
-        if ! ping -c 1 $ip &> /dev/null; then
+        if ! ping -c 1 8.8.8.8 &> /dev/null; then
             echo "Connessione tra le due macchine interrotta!" | tee -a script.log
             riconn=1
             while [ $riconn -le 5 ]; do
                 sleep 60
                 echo "Tentativo di riconnessione: $riconn" | tee -a script.log
-                if  ping -c 1 $ip &> /dev/null; then
+                if  ping -c 1 8.8.8.8 &> /dev/null; then
                     echo "Connessione ristabilita. Riprovo il comando..." | tee -a script.log
                     break
                 fi
                 ((riconn++))
             done
-            if ! ping -c 1 $ip &> /dev/null; then
+            if [ $riconn -gt 5 ]; then
                 oggetto_email="RSYNC INTERROTTO PER DISCONNESSIONE"
                 corpo_email="Ti comunico che l'rsync del repository, avviato per il comune di $comune , si è interrotto a causa di una disconnessione. Ho fatto
                 5 tentativi di riconnessione ma senza successo. Troverai il riepilogo completo (output.log) e l'output dello script (script.log) nella cartella dove hai eseguito il comando. Questo invece è il riepilogo degli errori: \n$errore"
@@ -193,7 +191,7 @@ done
 ###################
 ## Invia l'email ##
 ###################
-if [ -n "$oggetto_email" ]; then
+if [ -n "$oggetto_email" ] && [ -n "$corpo_email" ]; then
     echo -e "From: MA_rsync_notify@outlook.com\nTo: $email_destinatario\nCc: $(IFS=','; echo "${email_copia[*]}")\nSubject: $oggetto_email\n\n$corpo_email" | /usr/sbin/sendmail -t
 
     ########################################################################################################################################
